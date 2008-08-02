@@ -1,3 +1,6 @@
+
+require 'classifier_c'
+
 class Classifier
   def initialize(path)
     @path = path
@@ -21,7 +24,7 @@ class Classifier
     results = {}
     max = argmax = nil
     @templates.sort.each do |key, seq|
-      dist = Classifier.dtw(sequence_without_time, seq)
+      dist = ClassifierC.dtw(sequence_without_time, seq)
       if max.nil? || dist <= max
         max = dist
         argmax = key
