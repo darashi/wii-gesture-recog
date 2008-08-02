@@ -6,6 +6,10 @@ OSX.require_framework "WiiRemote"
 
 require 'classifier'
 
+def say(str)
+  Thread.start { system "say '#{str}'" }
+end
+
 class WiiRemoconTest < OSX::NSObject
   def initialize
     @discovery = nil
@@ -23,6 +27,7 @@ class WiiRemoconTest < OSX::NSObject
     puts "WiiRemoteDiscovered remote=#{remote.inspect}"
     @remote = Remote.alloc.init
     @remote.start(remote)
+    say "connected"
     @discovery.stop
   end
 
@@ -53,7 +58,6 @@ class Remote < OSX::NSObject
     @record_mode = false
     @recorded_data = []
     @t0 = nil
-    @templates = {}
   end
 
   def irPointMovedX_Y_wiiRemote(px, py, wiiRemote)
@@ -64,31 +68,26 @@ class Remote < OSX::NSObject
     puts "buttonChanged_isPressed #{btn_type} #{is_pressed}                "
     if btn_type == 0
       if is_pressed == 1
+        # ボタンが押された: 記録開始
         @record_mode = true
         @recorded_data = []
         @t0 = Time.now
       else
+        # ボタンが離された: 記録完了, 認識
         @record_mode = false
-        @recorded_data.each do |v|
-          puts "%f %d %d %d" % v
+        # 現在のデータを書き出す
+        open("sequence.txt", "w") do |f|
+          @recorded_data.each do |v|
+            f.puts "%f %d %d %d" % v
+          end
         end
+        # 識別結果を返す
         say $classifier.classify(@recorded_data)
-        #say(@class_names[argmin])
       end
     end
-    if btn_type == 1 && is_pressed == 1 && !@recorded_data.empty?
-      open("sequence.txt", "w") do |f|
-        @recorded_data.each do |v|
-          f.puts "%f %d %d %d" % v
-        end
-      end
-      say "saved"
+    if btn_type == 5 && is_pressed == 1
+      system("sh show.sh sequence.txt")
     end
-  end
-
-
-  def say(str)
-    Thread.start { system "say '#{str}'" }
   end
 
   def accelerationChanged_accX_accY_accZ_wiiRemote(type, ax, ay, az, wiiRemote)
@@ -108,6 +107,7 @@ class Remote < OSX::NSObject
 
   def wiiRemoteDisconnected(device)
     puts "wiiRemoteDisconnected"
+    say "disconnected"
   end
 
   objc_method :irPointMovedX_Y_wiiRemote, %w{void float float id}
