@@ -1,10 +1,10 @@
-#include<stdio.h>
-#include<string.h>
-#include<stdlib.h>
-#include<ruby.h>
-#include<math.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ruby.h>
+#include <math.h>
 
-VALUE dtw(VALUE self, VALUE x, VALUE y){
+VALUE dtw_fast(VALUE self, VALUE x, VALUE y){
   int n, m, d;
   int i,j,k;
   int t;
@@ -63,10 +63,10 @@ VALUE dtw(VALUE self, VALUE x, VALUE y){
   return rb_float_new(f[n][m]);
 }
 
-VALUE Init_classifier_c(void)
+VALUE Init_dtw_fast(void)
 {
-  VALUE rb_cClassifierC;
-  rb_cClassifierC = rb_define_class("ClassifierC", rb_cObject);
-  rb_define_singleton_method(rb_cClassifierC, "dtw", dtw, 2);
+  VALUE rb_cClassifier;
+  rb_cClassifier = rb_define_class("Classifier", rb_cObject);
+  rb_define_singleton_method(rb_cClassifier, "dtw_fast", dtw_fast, 2);
   return Qnil;
 }

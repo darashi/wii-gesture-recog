@@ -1,3 +1,3 @@
 require 'mkmf'
 
-create_makefile 'classifier_c'
+create_makefile 'dtw_fast'

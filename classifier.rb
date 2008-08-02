@@ -1,5 +1,9 @@
 
-require 'classifier_c'
+begin
+  require 'dtw_fast'
+rescue LoadError
+  STDERR.puts "faild to load C extension. pure-ruby version used."
+end
 
 class Classifier
   def initialize(path)
@@ -24,7 +28,12 @@ class Classifier
     results = {}
     max = argmax = nil
     @templates.sort.each do |key, seq|
-      dist = ClassifierC.dtw(sequence_without_time, seq)
+      if Classifier.respond_to?(:dtw_fast)
+        dist = Classifier.dtw_fast(sequence_without_time, seq)
+      else
+        dist = Classifier.dtw(sequence_without_time, seq)
+      end
+
       if max.nil? || dist <= max
         max = dist
         argmax = key
